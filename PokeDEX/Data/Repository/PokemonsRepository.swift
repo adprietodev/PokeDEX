@@ -10,21 +10,37 @@ import Foundation
 class PokemonsRepository: PokemonRepositoryProtocol {
   // MARK: - Properties
   let datasource: PokemonsDatasourceProtocol
-
+  
   init(datasource: PokemonsDatasourceProtocol) {
     self.datasource = datasource
   }
-
+  
   // MARK: - Functions
   func getPokemons(at page: Int) async throws -> [Pokemon] {
-    let pokemonListItemDTO = try await datasource.getPokemonList(at: page)
     var pokemonDTO = [PokemonDetailDTO]()
-    
-    for pokemon in pokemonListItemDTO {
-      let pokemonDetailDTO = try await datasource.getPokemonDetail(pokemon.name)
-      pokemonDTO.append(pokemonDetailDTO)
+    do {
+      let pokemonListItemDTO = try await datasource.getPokemonList(at: page)
+      
+      if pokemonListItemDTO.isEmpty {
+        throw APPError.notPokemons
+      }
+      
+      for pokemon in pokemonListItemDTO {
+        let pokemonDetailDTO = try await datasource.getPokemonDetail(pokemon.name)
+        pokemonDTO.append(pokemonDetailDTO)
+      }
+    } catch let apiError as APIError {
+      switch apiError {
+      case .invalidURL, .requestFailed:
+        throw APPError.connectionError(description: "connection failed")
+      case .JSONParsedFailed(let description):
+        print("❌ \(description) ❌")
+        throw APPError.connectionError(description: "connection failed")
+      case .responseUnsuccessfil(let statusCode):
+        print("❌ conection error, status code: \(statusCode) ❌")
+        throw APPError.connectionError(description: "connection failed")
+      }
     }
-
     return pokemonDTO.map { $0.toDomain() }
   }
 }

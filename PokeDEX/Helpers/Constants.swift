@@ -13,13 +13,6 @@ struct Constants {
     case baseURL = "https://pokeapi.co/api/v2"
   }
   
-  enum APIError: Error {
-    case notURLResponse
-    case invalidURL
-    case requestFailed
-    case responseUnsuccessfil(statusCode: Int)
-  }
-  
   enum PokemonType: String {
     case fighting
     case flying

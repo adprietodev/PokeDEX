@@ -12,6 +12,7 @@ class PokemonListViewModel: ObservableObject {
   
   @Published var isLoading: Bool = false
   @Published var pokemons = [Pokemon]()
+  @Published var alertMessage: String? = nil
   var currentPage: Int = 0
   
 
@@ -29,8 +30,11 @@ class PokemonListViewModel: ObservableObject {
           self.pokemons += newPokemons
           isLoading = false
         }
-      } catch {
-        // TODO: - Handle error
+      } catch let appError as APIError {
+        DispatchQueue.main.async { [weak self] in
+          guard let self else { return }
+          alertMessage = appError.localizedDescription
+        }
       }
     }
   }

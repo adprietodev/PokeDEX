@@ -14,54 +14,56 @@ class PokemonsDatasource: PokemonsDatasourceProtocol {
     let pokemonURL = "\(Constants.URLs.baseURL.rawValue)/pokemon?limit=20&offset=\(offset)"
     
     guard let url = URL(string: pokemonURL) else {
-      throw Constants.APIError.invalidURL
+      throw APIError.invalidURL
     }
-
-    let request = URLRequest(url: url)
-    let (data, response): (Data, URLResponse)
-
-    do {
-      (data, response) = try await URLSession.shared.data(for: request)
-    } catch {
-      throw Constants.APIError.requestFailed
-    }
-
+    
+    let (data, response): (Data, URLResponse) = try await getDataAndResponse(url)
+    
     guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
       if let httpResponse = response as? HTTPURLResponse {
-        throw Constants.APIError.responseUnsuccessfil(statusCode: httpResponse.statusCode)
+        throw APIError.responseUnsuccessfil(statusCode: httpResponse.statusCode)
       } else {
-        throw Constants.APIError.responseUnsuccessfil(statusCode: 0)
+        throw APIError.responseUnsuccessfil(statusCode: 0)
       }
     }
-
-    let pokemonsListPaginationDTO = try JSONDecoder().decode(PokemonListPaginationDTO.self, from: data)
-    return pokemonsListPaginationDTO.results ?? []
+    
+    do {
+      let pokemonsListPaginationDTO = try JSONDecoder().decode(PokemonListPaginationDTO.self, from: data)
+      return pokemonsListPaginationDTO.results ?? []
+    } catch {
+      throw APIError.JSONParsedFailed(description: "PokemonListPaginationDTO parsed Error")
+    }
   }
   
   func getPokemonDetail(_ name: String) async throws -> PokemonDetailDTO {
     let pokemonURL = "\(Constants.URLs.baseURL.rawValue)/pokemon/\(name)"
-
+    
     guard let url = URL(string: pokemonURL) else {
-      throw Constants.APIError.invalidURL
+      throw APIError.invalidURL
     }
-
-    let request = URLRequest(url: url)
-    let (data, response): (Data, URLResponse)
-
-    do {
-      (data, response) = try await URLSession.shared.data(for: request)
-    } catch {
-      throw Constants.APIError.requestFailed
-    }
-
+    
+    let (data, response): (Data, URLResponse) = try await getDataAndResponse(url)
+    
     guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
       if let httpResponse = response as? HTTPURLResponse {
-        throw Constants.APIError.responseUnsuccessfil(statusCode: httpResponse.statusCode)
+        throw APIError.responseUnsuccessfil(statusCode: httpResponse.statusCode)
       } else {
-        throw Constants.APIError.responseUnsuccessfil(statusCode: 0)
+        throw APIError.responseUnsuccessfil(statusCode: 0)
       }
     }
-
-    return try JSONDecoder().decode(PokemonDetailDTO.self, from: data)
+    do {
+      return try JSONDecoder().decode(PokemonDetailDTO.self, from: data)
+    } catch {
+      throw APIError.JSONParsedFailed(description: "PokemonDetailDTO parsed Error")
+    }
+  }
+  
+  private func getDataAndResponse(_ url: URL) async throws -> (Data, URLResponse) {
+    let request = URLRequest(url: url)
+    do {
+      return try await URLSession.shared.data(for: request)
+    } catch {
+      throw APIError.requestFailed
+    }
   }
 }

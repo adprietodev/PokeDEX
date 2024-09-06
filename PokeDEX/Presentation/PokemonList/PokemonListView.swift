@@ -18,6 +18,9 @@ struct PokemonListView<VM: PokemonListViewModel>: View {
               NavigationLink(destination: PokemonDetailBuilder().build(pokemon)) {
                 PokemonView(pokemon: pokemon)
                   .padding(.horizontal, 8)
+                  .alert(item: $viewModel.alertMessage) { message in
+                    Alert(title: "Warning", message: message, dismissButton: .default("OK"))
+                  }
                   .onAppear {
                     if pokemon.id == viewModel.pokemons.last?.id {
                       viewModel.loadNewPage()
