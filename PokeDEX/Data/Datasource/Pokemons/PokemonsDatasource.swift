@@ -12,7 +12,6 @@ class PokemonsDatasource: PokemonsDatasourceProtocol {
   func getPokemonList(at page: Int) async throws -> [PokemonListItemDTO] {
     let offset = page * 20
     let pokemonURL = "\(Constants.URLs.baseURL.rawValue)/pokemon?limit=20&offset=\(offset)"
-    
     guard let url = URL(string: pokemonURL) else {
       throw APIError.invalidURL
     }

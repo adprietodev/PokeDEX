@@ -10,10 +10,11 @@ import Foundation
 class PokemonListViewModel: ObservableObject {
   let pokemonUseCase: PokemonsUseCaseProtocol
   
-  @Published var isLoading: Bool = false
+  @Published var isLoading = false
   @Published var pokemons = [Pokemon]()
-  @Published var alertMessage: String? = nil
-  var currentPage: Int = 0
+  @Published var message: String? = nil
+  @Published public var showingAlert = false
+  var currentPage = 0
   
 
   init(pokemonUseCase: PokemonsUseCaseProtocol) {
@@ -30,10 +31,12 @@ class PokemonListViewModel: ObservableObject {
           self.pokemons += newPokemons
           isLoading = false
         }
-      } catch let appError as APIError {
+      } catch let error as APPError{
         DispatchQueue.main.async { [weak self] in
           guard let self else { return }
-          alertMessage = appError.localizedDescription
+          showingAlert.toggle()
+          message = error.localizedDescription
+          isLoading = false
         }
       }
     }
@@ -44,4 +47,9 @@ class PokemonListViewModel: ObservableObject {
     currentPage += 1
     setPokemons()
   }
+}
+
+struct AlertItem: Identifiable {
+    let id = UUID()
+    let message: String
 }

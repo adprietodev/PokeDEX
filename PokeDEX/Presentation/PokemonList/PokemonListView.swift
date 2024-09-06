@@ -13,14 +13,11 @@ struct PokemonListView<VM: PokemonListViewModel>: View {
     var body: some View {
       NavigationStack {
         ScrollView {
-          LazyVGrid (columns: [GridItem(.flexible()),GridItem(.flexible())], spacing: 16) {
+          LazyVGrid (columns: [GridItem(.flexible()),GridItem(.flexible())], spacing: 24) {
             ForEach(viewModel.pokemons, id: \.id) { pokemon in
               NavigationLink(destination: PokemonDetailBuilder().build(pokemon)) {
                 PokemonView(pokemon: pokemon)
                   .padding(.horizontal, 8)
-                  .alert(item: $viewModel.alertMessage) { message in
-                    Alert(title: "Warning", message: message, dismissButton: .default("OK"))
-                  }
                   .onAppear {
                     if pokemon.id == viewModel.pokemons.last?.id {
                       viewModel.loadNewPage()
@@ -29,13 +26,19 @@ struct PokemonListView<VM: PokemonListViewModel>: View {
               }
             }
           }
+          .alert(isPresented: $viewModel.showingAlert) {
+            Alert(title: Text("Error"), message: Text(viewModel.message ?? "") , dismissButton: Alert.Button.default(
+              Text("OK"), action: {
+                viewModel.showingAlert.toggle()
+              }))
+          }
           .padding(.horizontal, 8)
           if viewModel.isLoading {
             ProgressView()
           }
         }
         .scrollIndicators(.hidden)
-        .navigationTitle("PokeDEX")
+        .navigationTitle("Pokedex")
       }
       .tint(Color.black)
     }
