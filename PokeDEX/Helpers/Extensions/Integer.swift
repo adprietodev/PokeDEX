@@ -11,4 +11,8 @@ extension Int {
   func convertToUnit(with divider: Double) -> Double{
     Double(self)/divider
   }
+
+  func convertStringPositionNumber() -> String {
+    String(format: "Nº%04d", self)
+  }
 }

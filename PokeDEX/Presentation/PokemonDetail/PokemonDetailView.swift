@@ -15,9 +15,10 @@ struct PokemonDetailView<VM: PokemonDetailViewModel>: View {
         ZStack {
           Circle()
             .trim(from: 0.5, to: 1)
-            .fill(Color.getColor(by: viewModel.pokemon.types[0]))
+            .fill(viewModel.pokemon.types[0].color)
           VStack {
             ImageURLView(pokemon: viewModel.pokemon, size: 240)
+            Text(viewModel.pokemon.id.convertStringPositionNumber())
             Text("\(viewModel.pokemon.name)".uppercased())
             VStack(alignment: .leading) {
               HStack{
@@ -49,7 +50,7 @@ struct PokemonDetailView<VM: PokemonDetailViewModel>: View {
             ForEach(viewModel.pokemon.types, id: \.self) { type in
               ZStack {
                 RoundedRectangle(cornerRadius: 6)
-                  .fill(Color.getColor(by: type))
+                  .fill(type.color)
                   .frame(width: (UIScreen.main.bounds.size.width/CGFloat(viewModel.pokemon.types.count) - CGFloat(24)), height: 50)
                 Text("\(type)".capitalized)
                   .foregroundStyle(.white)

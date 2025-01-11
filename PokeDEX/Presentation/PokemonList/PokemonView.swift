@@ -13,7 +13,7 @@ struct PokemonView: View {
     var body: some View {
       ZStack {
         RoundedRectangle(cornerRadius: 16)
-          .stroke(Color.getColor(by: pokemon.types[0]), lineWidth: 1)
+          .stroke(pokemon.types[0].color, lineWidth: 1)
         VStack {
           ImageURLView(pokemon: pokemon, size: 116)
           Text("\(pokemon.name)".uppercased())
@@ -21,7 +21,7 @@ struct PokemonView: View {
           HStack {
             ForEach(pokemon.types, id: \.self) { type in
               Text("\(type)".capitalized)
-                .foregroundStyle(Color.getColor(by: type))
+                .foregroundStyle(type.color)
             }
           }
         }

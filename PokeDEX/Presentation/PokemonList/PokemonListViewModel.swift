@@ -13,15 +13,15 @@ class PokemonListViewModel: ObservableObject {
   @Published var isLoading = false
   @Published var pokemons = [Pokemon]()
   @Published var message: String? = nil
-  @Published public var showingAlert = false
+  @Published var showingAlert = false
+  @Published var networkMonitor = NetworkMonitor()
   var currentPage = 0
   
-
   init(pokemonUseCase: PokemonsUseCaseProtocol) {
     self.pokemonUseCase = pokemonUseCase
     setPokemons()
   }
-
+  
   func setPokemons() {
     Task {
       do {
@@ -29,27 +29,22 @@ class PokemonListViewModel: ObservableObject {
         DispatchQueue.main.async { [weak self] in
           guard let self else { return }
           self.pokemons += newPokemons
-          isLoading = false
+          isLoading.toggle()
         }
       } catch let error as APPError{
         DispatchQueue.main.async { [weak self] in
           guard let self else { return }
           showingAlert.toggle()
           message = error.localizedDescription
-          isLoading = false
+          isLoading.toggle()
         }
       }
     }
   }
-
+  
   func loadNewPage() {
-    isLoading = true
+    isLoading.toggle()
     currentPage += 1
     setPokemons()
   }
-}
-
-struct AlertItem: Identifiable {
-    let id = UUID()
-    let message: String
 }

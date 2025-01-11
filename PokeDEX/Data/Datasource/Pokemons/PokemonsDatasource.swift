@@ -12,20 +12,9 @@ class PokemonsDatasource: PokemonsDatasourceProtocol {
   func getPokemonList(at page: Int) async throws -> [PokemonListItemDTO] {
     let offset = page * 20
     let pokemonURL = "\(Constants.URLs.baseURL.rawValue)/pokemon?limit=20&offset=\(offset)"
-    guard let url = URL(string: pokemonURL) else {
-      throw APIError.invalidURL
-    }
     
-    let (data, response): (Data, URLResponse) = try await getDataAndResponse(url)
-    
-    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-      if let httpResponse = response as? HTTPURLResponse {
-        throw APIError.responseUnsuccessfil(statusCode: httpResponse.statusCode)
-      } else {
-        throw APIError.responseUnsuccessfil(statusCode: 0)
-      }
-    }
-    
+    let (data, _): (Data, URLResponse) = try await getDataAndResponse(pokemonURL)
+
     do {
       let pokemonsListPaginationDTO = try JSONDecoder().decode(PokemonListPaginationDTO.self, from: data)
       return pokemonsListPaginationDTO.results ?? []
@@ -36,20 +25,9 @@ class PokemonsDatasource: PokemonsDatasourceProtocol {
   
   func getPokemonDetail(_ name: String) async throws -> PokemonDetailDTO {
     let pokemonURL = "\(Constants.URLs.baseURL.rawValue)/pokemon/\(name)"
-    
-    guard let url = URL(string: pokemonURL) else {
-      throw APIError.invalidURL
-    }
-    
-    let (data, response): (Data, URLResponse) = try await getDataAndResponse(url)
-    
-    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-      if let httpResponse = response as? HTTPURLResponse {
-        throw APIError.responseUnsuccessfil(statusCode: httpResponse.statusCode)
-      } else {
-        throw APIError.responseUnsuccessfil(statusCode: 0)
-      }
-    }
+
+    let (data, _): (Data, URLResponse) = try await getDataAndResponse(pokemonURL)
+
     do {
       return try JSONDecoder().decode(PokemonDetailDTO.self, from: data)
     } catch {
@@ -57,10 +35,25 @@ class PokemonsDatasource: PokemonsDatasourceProtocol {
     }
   }
   
-  private func getDataAndResponse(_ url: URL) async throws -> (Data, URLResponse) {
-    let request = URLRequest(url: url)
+  private func getDataAndResponse(_ urlString: String) async throws -> (Data, URLResponse) {
     do {
-      return try await URLSession.shared.data(for: request)
+      guard let url = URL(string: urlString) else {
+        throw APIError.invalidURL
+      }
+
+      let request = URLRequest(url: url)
+
+      let (data, response) =  try await URLSession.shared.data(for: request)
+
+      guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+        if let httpResponse = response as? HTTPURLResponse {
+          throw APIError.responseUnsuccessfil(statusCode: httpResponse.statusCode)
+        } else {
+          throw APIError.responseUnsuccessfil(statusCode: 0)
+        }
+      }
+
+      return (data, response)
     } catch {
       throw APIError.requestFailed
     }

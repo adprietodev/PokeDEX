@@ -9,9 +9,10 @@ import SwiftUI
 
 struct PokemonListView<VM: PokemonListViewModel>: View {
   @StateObject var viewModel: VM
-
-    var body: some View {
-      NavigationStack {
+  
+  var body: some View {
+    NavigationStack {
+      if viewModel.networkMonitor.isConnected {
         ScrollView {
           LazyVGrid (columns: [GridItem(.flexible()),GridItem(.flexible())], spacing: 24) {
             ForEach(viewModel.pokemons, id: \.id) { pokemon in
@@ -39,9 +40,12 @@ struct PokemonListView<VM: PokemonListViewModel>: View {
         }
         .scrollIndicators(.hidden)
         .navigationTitle("Pokedex")
+      } else {
+        NetworkUnavailableView()
       }
-      .tint(Color.black)
     }
+    .tint(Color.black)
+  }
 }
 
 #Preview {
